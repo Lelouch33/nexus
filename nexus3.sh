@@ -16,7 +16,7 @@ NODE_ID=""
 
 show_logo() {
   echo -e "\n\n${NC}Добро пожаловать в скрипт управления нодами Nexus${NC}"
-  curl -s https://raw.githubusercontent.com/pittpv/nexus-node/refs/heads/main/other/logo.sh | bash
+  curl -s https://raw.githubusercontent.com/Lelouch33/nexus/main/other/logo.sh | bash
 }
 
 print_menu() {

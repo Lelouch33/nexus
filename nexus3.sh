@@ -94,31 +94,9 @@ EOF
 }
 
 prompt_node_config() {
-  echo "Выберите способ указания NODE_ID:"
-  echo "1) Из файла nexus-nodes.txt"
-  echo "2) Ввести вручную"
-  read -rp "Ваш выбор [1 или 2]: " choice
-
-  NODE_IDS=()
-  NODE_COUNT=0
-
-  if [[ "$choice" == "1" ]]; then
-    if [[ -f "nexus-nodes.txt" ]]; then
-      mapfile -t NODE_IDS < nexus-nodes.txt
-      NODE_COUNT=${#NODE_IDS[@]}
-      echo -e "${GREEN}Используется файл nexus-nodes.txt (найдено NODE_ID: $NODE_COUNT).${NC}"
-    else
-      echo -e "${RED}Файл nexus-nodes.txt не найден. Создайте его и добавьте NODE_ID (каждый с новой строки).${NC}"
-      return 0
-    fi
-  elif [[ "$choice" == "2" ]]; then
-    echo -n "Сколько нод Nexus установить? [по умолчанию 1]: "
-    read -r NODE_COUNT
-    [[ ! "$NODE_COUNT" =~ ^[1-9][0-9]*$ ]] && NODE_COUNT=1
-  else
-    echo -e "${RED}Неверный выбор. Возврат в меню.${NC}"
-    return 0
-  fi
+  echo -n "Сколько нод Nexus установить? [по умолчанию 1]: "
+  read -r NODE_COUNT
+  [[ ! "$NODE_COUNT" =~ ^[1-9][0-9]*$ ]] && NODE_COUNT=1
 
   echo -n "Количество потоков на ноду [1-8, по умолчанию 1]: "
   read -r THREADS
@@ -128,17 +106,12 @@ prompt_node_config() {
   docker pull nexusxyz/nexus-cli:latest
 
   for ((n=1; n<=NODE_COUNT; n++)); do
-    if [[ "$choice" == "1" && ${#NODE_IDS[@]} -ge n ]]; then
-      NODE_ID="${NODE_IDS[$((n-1))]}"
-      echo "Используется NODE_ID из файла: $NODE_ID"
-    else
-      echo -n "Введите NODE_ID: "
+    echo -n "Введите NODE_ID для ноды $n: "
+    read -r NODE_ID
+    while [[ -z "$NODE_ID" ]]; do
+      echo -n "NODE_ID не может быть пустым. Введите снова: "
       read -r NODE_ID
-      while [[ -z "$NODE_ID" ]]; do
-        echo -n "NODE_ID не может быть пустым. Введите снова: "
-        read -r NODE_ID
-      done
-    fi
+    done
 
     SAFE_NODE_ID=$(echo "$NODE_ID" | tr -c 'a-zA-Z0-9_.-' '-')
     SAFE_NODE_ID=$(echo "$SAFE_NODE_ID" | sed -E 's/^-+//; s/-+$//; s/-+/-/g')
